@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Claude Usage History</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      font-size: 13px;
+      min-height: 100vh;
+    }
+
+    header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 24px;
+      background: #16162a;
+      border-bottom: 1px solid #2a2a45;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .header-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .header-dot { color: #D97757; font-size: 18px; }
+
+    h1 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #f0f0f0;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .range-group {
+      display: flex;
+      gap: 4px;
+      background: #2a2a45;
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .range-btn {
+      padding: 4px 12px;
+      border: none;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      background: transparent;
+      color: #8888aa;
+      transition: all 0.15s;
+    }
+
+    .range-btn.active {
+      background: #3a3a5a;
+      color: #f0f0f0;
+    }
+
+    .btn-export {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      border: none;
+      background: #2a2a45;
+      color: #ccccee;
+      transition: background 0.2s;
+    }
+
+    .btn-export:hover { background: #3a3a55; }
+
+    main {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: #16162a;
+      border: 1px solid #2a2a45;
+      border-radius: 10px;
+      padding: 14px 16px;
+    }
+
+    .stat-label {
+      font-size: 10px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #8888aa;
+      margin-bottom: 6px;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      font-weight: 700;
+      color: #f0f0f0;
+    }
+
+    .stat-sub {
+      font-size: 11px;
+      color: #666688;
+      margin-top: 2px;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: #16162a;
+      border: 1px solid #2a2a45;
+      border-radius: 10px;
+      padding: 16px;
+    }
+
+    .chart-title {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #8888aa;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .chart-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    canvas {
+      width: 100%;
+      height: 180px;
+      display: block;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 24px;
+      color: #666688;
+    }
+
+    .empty-state h2 {
+      font-size: 16px;
+      color: #8888aa;
+      margin-bottom: 8px;
+    }
+
+    .empty-state p { line-height: 1.6; }
+
+    @media (max-width: 700px) {
+      .charts-grid { grid-template-columns: 1fr; }
+      .stats-row { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-left">
+      <span class="header-dot">◉</span>
+      <h1>Claude Usage History</h1>
+    </div>
+    <div class="header-right">
+      <div class="range-group">
+        <button class="range-btn" data-days="1">24h</button>
+        <button class="range-btn active" data-days="7">7d</button>
+        <button class="range-btn" data-days="30">30d</button>
+      </div>
+      <button class="btn-export" id="btn-export">⬇ Export CSV</button>
+    </div>
+  </header>
+
+  <main id="main">
+    <div class="empty-state" id="empty">
+      <h2>No history data yet</h2>
+      <p>Usage snapshots are captured automatically every 5 minutes.<br>
+         Click <strong>Refresh</strong> in the popup to capture data now.</p>
+    </div>
+
+    <div id="content" style="display:none">
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-label">Session avg</div>
+          <div class="stat-value" id="stat-s-avg">—</div>
+          <div class="stat-sub" id="stat-s-range">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Weekly All avg</div>
+          <div class="stat-value" id="stat-wa-avg">—</div>
+          <div class="stat-sub" id="stat-wa-range">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Weekly Sonnet avg</div>
+          <div class="stat-value" id="stat-ws-avg">—</div>
+          <div class="stat-sub" id="stat-ws-range">—</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Additional usage</div>
+          <div class="stat-value" id="stat-ae-last">—</div>
+          <div class="stat-sub" id="stat-ae-range">—</div>
+        </div>
+      </div>
+
+      <div class="charts-grid">
+        <div class="chart-card">
+          <div class="chart-title">
+            <span class="chart-dot" style="background:#4ade80"></span>
+            Session usage
+          </div>
+          <canvas id="chart-s"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">
+            <span class="chart-dot" style="background:#fbbf24"></span>
+            Weekly — All Models
+          </div>
+          <canvas id="chart-wa"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">
+            <span class="chart-dot" style="background:#ef4444"></span>
+            Weekly — Sonnet only
+          </div>
+          <canvas id="chart-ws"></canvas>
+        </div>
+        <div class="chart-card">
+          <div class="chart-title">
+            <span class="chart-dot" style="background:#D97757"></span>
+            Additional usage (€)
+          </div>
+          <canvas id="chart-ae"></canvas>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="history.js"></script>
+</body>
+</html>

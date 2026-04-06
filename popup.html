@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=320">
+  <link rel="stylesheet" href="popup.css">
+  <title>Claude Usage Monitor</title>
+</head>
+<body>
+  <div class="container">
+    <header class="header">
+      <span class="header-dot">◉</span>
+      <span class="header-title">Claude Usage Monitor</span>
+    </header>
+
+    <div id="no-data" class="no-data">
+      <p>No data yet.</p>
+      <p class="no-data-hint">Open <a href="#" id="open-claude-nodata">claude.ai</a> and click on your profile to view usage limits. The extension will capture the data automatically.</p>
+    </div>
+
+    <div id="data-container" class="data-container hidden">
+      <section class="usage-section" id="section-session">
+        <div class="section-header">
+          <span class="section-label">SESSION</span>
+          <span class="plan-badge" id="plan-name"></span>
+        </div>
+        <div class="progress-row">
+          <div class="progress-bar"><div class="progress-fill" id="bar-session"></div></div>
+          <span class="percent-label" id="pct-session">—</span>
+        </div>
+        <div class="reset-time" id="reset-session"></div>
+      </section>
+
+      <section class="usage-section" id="section-weeklyAll">
+        <div class="section-header">
+          <span class="section-label">WEEKLY — All Models</span>
+        </div>
+        <div class="progress-row">
+          <div class="progress-bar"><div class="progress-fill" id="bar-weeklyAll"></div></div>
+          <span class="percent-label" id="pct-weeklyAll">—</span>
+        </div>
+        <div class="reset-time" id="reset-weeklyAll"></div>
+      </section>
+
+      <section class="usage-section" id="section-weeklySonnet">
+        <div class="section-header">
+          <span class="section-label">WEEKLY — Sonnet</span>
+        </div>
+        <div class="progress-row">
+          <div class="progress-bar"><div class="progress-fill" id="bar-weeklySonnet"></div></div>
+          <span class="percent-label" id="pct-weeklySonnet">—</span>
+        </div>
+        <div class="reset-time" id="reset-weeklySonnet"></div>
+      </section>
+
+      <section class="usage-section" id="section-additional">
+        <div class="section-header">
+          <span class="section-label">ADDITIONAL USAGE</span>
+        </div>
+        <div class="additional-row">
+          <span id="additional-spent">—</span>
+          <span class="additional-separator">/</span>
+          <span id="additional-limit">—</span>
+        </div>
+        <div class="reset-time" id="reset-additional"></div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      <div class="last-updated" id="last-updated"></div>
+      <div class="footer-actions">
+        <button class="btn btn-refresh" id="btn-refresh" title="Refresh">↻ Refresh</button>
+        <button class="btn btn-history" id="btn-history" title="View history">📊 History</button>
+        <button class="btn btn-csv" id="btn-csv" title="Export CSV">⬇ CSV</button>
+      </div>
+      <div class="footer-actions footer-actions-bottom">
+        <a href="#" class="btn btn-open btn-full" id="btn-open-usage">Open usage panel</a>
+      </div>
+    </footer>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
